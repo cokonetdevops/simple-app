@@ -22,7 +22,7 @@ npm -v
 ```
 
 ### Step 2: Transfer Your Application Code to the EC2 Instance
-You need to get your code (the `package.json`, `src/`, and `public/` directories) onto the EC2 instance. You have a few options:
+You need to get your code (the `package.json`, `src/`, and `public/` directories) onto the EC2 instance.
 
 **Clone from Git**
 If your code is in a repository (like GitHub or GitLab):
