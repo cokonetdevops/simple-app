@@ -1,6 +1,6 @@
 # Simple App
 
-### Step 2: Install Node.js (Version 22)
+### Step 1: Install Node.js (Version 22)
 The Dockerfile uses `node:22-alpine`. To install Node.js v22 on Ubuntu, you can use the NodeSource PPA:
 ```bash
 # Update package index
@@ -21,7 +21,7 @@ node -v
 npm -v
 ```
 
-### Step 3: Transfer Your Application Code to the EC2 Instance
+### Step 2: Transfer Your Application Code to the EC2 Instance
 You need to get your code (the `package.json`, `src/`, and `public/` directories) onto the EC2 instance. You have a few options:
 
 **Option A: Clone from Git (Recommended)**
@@ -31,7 +31,7 @@ git clone <your-repository-url>
 cd <your-repository-directory>
 ```
 
-### Step 4: Install Dependencies and Build the application
+### Step 3: Install Dependencies and Build the application
 Run the equivalent of the `Dockerfile`'s `RUN` commands:
 
 ```bash
@@ -48,7 +48,7 @@ npm run build
 rm -fr node_modules
 ```
 
-### Step 5: Configure AWS Security Group
+### Step 4: Configure AWS Security Group
 The `Dockerfile` exposes port `3000`. You absolutely must allow traffic to this port on AWS.
 1. Go to your AWS EC2 Console.
 2. Select your instance and click on the **Security** tab.
@@ -60,7 +60,7 @@ The `Dockerfile` exposes port `3000`. You absolutely must allow traffic to this 
    - **Source**: Custom `0.0.0.0/0` (or `Anywhere-IPv4`) to allow anyone to view it.
 6. Save rules.
 
-### Step 6: Start the Application
+### Step 5: Start the Application
 Finally, start your static server as defined in the Dockerfile's `CMD`:
 ```bash
 serve -s build -l 3000
