@@ -1,20 +1,84 @@
-# Welcome to Docker
+# Simple App
 
-This is a repo for new users getting started with Docker.
+### Step 2: Install Node.js (Version 22)
+The Dockerfile uses `node:22-alpine`. To install Node.js v22 on Ubuntu, you can use the NodeSource PPA:
+```bash
+# Update package index
+sudo apt update
 
-You can try it out using the following command.
+# Install curl if not already installed
+sudo apt install curl -y
+
+# Download and install the NodeSource setup script for Node.js 22
+curl -fsSL https://deb.nodesource.com/setup_22.x -o nodesource_setup.sh
+sudo -E bash nodesource_setup.sh
+
+# Install Node.js
+sudo apt install -y nodejs
+
+# Verify the installation
+node -v
+npm -v
 ```
-docker run -d -p 8088:80 --name welcome-to-docker docker/welcome-to-docker
-```
-And open `http://localhost:8088` in your browser.
 
-# Building
+### Step 3: Transfer Your Application Code to the EC2 Instance
+You need to get your code (the `package.json`, `src/`, and `public/` directories) onto the EC2 instance. You have a few options:
 
-Maintainers should see [MAINTAINERS.md](MAINTAINERS.md).
+**Option A: Clone from Git (Recommended)**
+If your code is in a repository (like GitHub or GitLab):
+```bash
+git clone <your-repository-url>
+cd <your-repository-directory>
+```
 
-Build and run:
+### Step 4: Install Dependencies and Build the application
+Run the equivalent of the `Dockerfile`'s `RUN` commands:
+
+```bash
+# 1. Install local dependencies
+npm install
+
+# 2. Install the 'serve' package globally (requires sudo on Ubuntu)
+sudo npm install -g serve@latest
+
+# 3. Build the application
+npm run build
+
+# 4. Remove local node_modules to save space (Optional, but matches the Dockerfile behavior)
+rm -fr node_modules
 ```
-docker build -t welcome-to-docker . 
-docker run -d -p 8088:3000 --name welcome-to-docker welcome-to-docker
+
+### Step 5: Configure AWS Security Group
+The `Dockerfile` exposes port `3000`. You absolutely must allow traffic to this port on AWS.
+1. Go to your AWS EC2 Console.
+2. Select your instance and click on the **Security** tab.
+3. Click the Security Group assigned to the instance.
+4. Click **Edit inbound rules**.
+5. Add a new rule: 
+   - **Type**: Custom TCP
+   - **Port range**: 3000
+   - **Source**: Custom `0.0.0.0/0` (or `Anywhere-IPv4`) to allow anyone to view it.
+6. Save rules.
+
+### Step 6: Start the Application
+Finally, start your static server as defined in the Dockerfile's `CMD`:
+```bash
+serve -s build -l 3000
 ```
-Open `http://localhost:8088` in your browser.
+
+> [!TIP]
+> Running the `serve` command as shown above will stop the app if you close your SSH session. To keep the application running in the background persistently, it's highly recommended to use **PM2** (a production process manager for Node.js):
+> 
+> ```bash
+> # Install PM2 globally
+> sudo npm install -g pm2
+> 
+> # Start the app using PM2
+> pm2 start "serve -s build -l 3000" --name "my-webapp"
+> 
+> # Make it restart automatically on server reboots
+> pm2 startup
+> pm2 save
+> ```
+
+You should now be able to access your web application by visiting `http://<your-ec2-public-ip>:3000` in your browser.
